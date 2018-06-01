@@ -1,34 +1,47 @@
 from nltk.corpus import wordnet as wn
+from nltk.stem import WordNetLemmatizer
 
-def nounify(verb_word):
+def nounify(word):
     """ Transform a verb to the closest noun: die -> death """
-    verb_synsets = wn.synsets(verb_word, pos="v")
+    word = WordNetLemmatizer().lemmatize(word)
+    word_synsets = wn.synsets(word)
 
     # Word not found
-    if not verb_synsets:
+    if not word_synsets:
         return []
+    print("synsets are ")
+    print(word_synsets)
+    # Get all lemmas of the word
+    word_lemmas = []
+    for s in word_synsets:
+        word_lemmas.append(s.lemmas())
 
-    # Get all verb lemmas of the word
-    verb_lemmas = [l for s in verb_synsets \
-                   for l in s.lemmas if s.name.split('.')[1] == 'v']
-
+    print("lemmas are ")
+    print(word_lemmas)
     # Get related forms
-    derivationally_related_forms = [(l, l.derivationally_related_forms()) \
-                                    for l in    verb_lemmas]
-
+    derivationally_related_forms =[]
+    for lemmalist in word_lemmas:
+        for l in lemmalist:
+            derivationally_related_forms.append(l.derivationally_related_forms())
+    print("derivationally related forms are")
+    print(derivationally_related_forms)
     # filter only the nouns
     related_noun_lemmas = [l for drf in derivationally_related_forms \
-                           for l in drf[1] if l.synset.name.split('.')[1] == 'n']
-
+                           for l in drf if l.synset().name().split('.')[1] == 'n']
+    print("noun lemmas are")
+    print(related_noun_lemmas)
     # Extract the words from the lemmas
-    words = [l.name for l in related_noun_lemmas]
+    words = [l.name() for l in related_noun_lemmas]
     len_words = len(words)
 
     # Build the result in the form of a list containing tuples (word, probability)
     result = [(w, float(words.count(w))/len_words) for w in set(words)]
     result.sort(key=lambda w: -w[1])
+    result = [res[0] for res in result]
+    print("results are")
+    print(result)
 
     # return all the possibilities sorted by probability
     return result
 
-print(nounify("write"))
+print(nounify("border"))

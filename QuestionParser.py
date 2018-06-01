@@ -15,6 +15,8 @@ class QuestionParser:
         self.possible_words = self.parse_spacy()            ##dictionary that stores possible words in a triple by type (Object, Property, Result)
         self.question_SQL = ''                              ##the Sparql query will be stored here (as string)
         self.possible_triples = self.tripleCombinations()   ##the possible query triples are here
+        print("possible triples :")
+        print(self.possible_triples)
         ##print(self.possible_triples)
         self.query_list = []                                ##the query statements (triples) are listed here
         ##self.parse_spacy()
@@ -107,5 +109,5 @@ class QuestionParser:
         } 
 }
         """                                                             ##last part: gets labels for wikidata IDs
-        #print(self.question_SQL)
+        print(self.question_SQL)
         return self.question_SQL

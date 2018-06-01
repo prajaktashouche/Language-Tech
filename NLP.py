@@ -19,7 +19,8 @@ class NLP:
         ret = []
         ##print(type(self.tokens))
         for w in range(0,len(self.tokens)):
-            #print(self.tokens[w].dep_)
+            print(self.tokens[w].dep_)
+            print(self.tokens[w])
             ##print(w)
             if self.tokens[w].dep_ == dep and not self.tokens[w].text in self.specs.question_words:
                 instance = []
