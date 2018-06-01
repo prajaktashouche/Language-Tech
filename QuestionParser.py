@@ -2,6 +2,7 @@ from Triples import *
 from Specs import *
 from TextNormalizer import *
 from NLP import *
+from test_nounify import *
 import re
 class QuestionParser:
     ###takes a string and creates a sparql query
@@ -12,6 +13,8 @@ class QuestionParser:
         self.variable = ''                                  ##the variable names that will be in the SELECT command
         self.targetVariable = ''                            ##the variable which will be printed in the end
         self.question = question                            ##question string
+        self.nlp = NLP(self.question, self.specs)
+        self.qWord = self.getQuestionWord()
         self.possible_words = self.parse_spacy()            ##dictionary that stores possible words in a triple by type (Object, Property, Result)
         self.question_SQL = ''                              ##the Sparql query will be stored here (as string)
         self.possible_triples = self.tripleCombinations()   ##the possible query triples are here
@@ -20,6 +23,11 @@ class QuestionParser:
         ##print(self.possible_triples)
         self.query_list = []                                ##the query statements (triples) are listed here
         ##self.parse_spacy()
+
+    def getQuestionWord(self):
+        for word in self.nlp.tokens:
+            if word.text in list(self.specs.question_words.keys()):
+                return word.text
 
     def parse_regex(self):
         for key in self.specs.patterns['triples']:              ##specs is a dict with regex pattern as key, and order of arguments as value
@@ -37,17 +45,43 @@ class QuestionParser:
 
     def parse_spacy(self):
         possible_words = {"Object":[], "Property":[], "Result":[]}
-        tripleType = ['Object', 'Property', {'variable': 'Result'}]   ###spacy can return in this structure always, this is important when constructing triples from regex, but kept here for making triple construction general
-        nlp = NLP(self.question, self.specs)
         for key, val in self.specs.deps.items():
             for dep in val:
                 ##print(dep)
-                a = (nlp.returnDep(dep))
+                a = (self.nlp.returnDep(dep))
                 if a != None:
                     possible_words[key].append(a)
             #print ("the " + key + "s of this sentence are ")
             #print(possible_words[key])
         return possible_words
+
+    def extended_parse_spacy(self):
+        for key, val in self.specs.extended_deps.items():
+            for dep in val:
+                ##print(dep)
+                a = (self.nlp.returnDep(dep))
+                if a != None:
+                    self.possible_words[key].append(a)
+                    # print ("the " + key + "s of this sentence are ")
+                    # print(possible_words[key])
+
+    def addNounSynonims(self):
+
+        for key, list in self.possible_words.items():
+            for word in list:
+                print("word is ")
+                print(word[0])
+                if isinstance(word[0], str):
+                    self.possible_words[key] = self.possible_words[key] + nounify(word[0])
+            print("key is " + str(key) + " extended list is ")
+            print(list)
+
+        self.possible_triples = self.tripleCombinations()
+        return
+
+    def induceWordsFromQuestionWord(self):
+        self.possible_words["Property"].append(self.specs.question_words[self.qWord])
+        self.possible_triples = self.tripleCombinations()
 
     def generateCombinations(self, a, aIndex, b, bIndex, ret):          ##recursively generates each pair given two lists
         ret.append([a[aIndex], b[bIndex]])
@@ -59,6 +93,8 @@ class QuestionParser:
 
 
     def tripleCombinations(self):      ##this returns a triple with one position being "", placeholder for the variable
+        print("construction triples with input")
+        print(self.possible_words)
         possible_triples = {"Object":[],
                             "Property":[],
                             "Result":[]}

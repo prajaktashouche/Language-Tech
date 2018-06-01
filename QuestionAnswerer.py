@@ -19,20 +19,38 @@ class QuestionAnswerer:
             print("could not construct query with question: " + self.question.question)
             self.data = None
 
-    def runNLP(self):
+    def runNLPwithTripleList(self):
         for key, tripleList in self.question.possible_triples.items():
             for triple in tripleList:
                 try:
-                    #print("triple is :")
-                    #print(triple)
+                    print("triple is :")
+                    print(triple)
+                    #print(triple.object.word + "-" + triple.property.word + "-"+ triple.result.word)
                     #print("format is ")
                     #print(self.question.specs.basic_question_formats[key])
                     q= self.question.constructQuery(self.question.queryStatementFromTriple(self.question.getTripleFromWordsAndFormat(triple, self.question.specs.basic_question_formats[key])))
-                    #print(q)
+                    print(q)
                     self.data = requests.get(self.url, params={'query': q, 'format': 'json'}).json()
-                    return
+                    ##print(self.data)
+                    if self.data["results"]["bindings"] != []:          ##not just proper query, but also got answers
+                        return True
                 except:
                     pass
+        return False
+
+    def runNLP(self):
+        ## First try: only the words in the question
+        if self.runNLPwithTripleList():
+            return
+        ##Second try: expand the list with nounified versions and synonims
+        self.question.extended_parse_spacy()
+        self.question.addNounSynonims()
+        if self.runNLPwithTripleList():
+            return
+        ## Third try: expand the list with words induced by the question word
+        self.question.induceWordsFromQuestionWord()
+        if self.runNLPwithTripleList():
+            return
         print("Could not construct query for the question :" + self.question.question)
 
     def getAnswer(self):

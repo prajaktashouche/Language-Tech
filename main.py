@@ -13,7 +13,11 @@ import sys
 
 ##############################################  define specification for the task here ###################################
 spec1 = {
-    'question_words':['What', 'Who'],
+    'ignored_words':["is"],
+    'question_words':{'What': ["instance of", "subclass of"],
+                      'Who':["instance of"],
+                      'Where': ['continent']
+                      },
     'basic_question_formats':{"Object":[{'variable':'Object'},'Property', 'Result'],
                         "Property":['Object', {'variable':'Property'}, 'Result'],
                         "Result": ['Object', 'Property', {'variable':'Result'}]},
@@ -25,10 +29,14 @@ spec1 = {
                 ##regex stopword removal (kept for potential use later): (?:the|a|an)?\s*
                 },
     },
-    'deps':{"Object": ["pobj", "poss", "nsubj", "conj"],                 ##we store here the possible deps (returned by spacy) for each element in a triple
+    'deps':{"Object": ["pobj", "poss", "nsubj", "conj", "dobj"],                 ##we store here the possible deps (returned by spacy) for each element in a triple
             "Property" : ["attr", "nsubj", "acomp", "dobj"],
             "Result": ["pobj"]
-            }
+            },
+    'extended_deps':{"Object": ["dobj"],                 ##The deps that should be considered when looking at the synonims and nounified words
+                        "Property" : ["ROOT"],
+                        "Result": []
+                    }
 }
 ###the specs are passed to the outer class as an argument, several versions can be defined here separately
 ##########################################################################################################################

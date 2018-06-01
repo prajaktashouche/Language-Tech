@@ -22,7 +22,7 @@ class NLP:
             print(self.tokens[w].dep_)
             print(self.tokens[w])
             ##print(w)
-            if self.tokens[w].dep_ == dep and not self.tokens[w].text in self.specs.question_words:
+            if self.tokens[w].dep_ == dep and not self.tokens[w].text in list(self.specs.question_words.keys()) and not self.tokens[w].text in self.specs.ignored_words:
                 instance = []
                 instance.append(self.tokens[w].text)
                 i = w-1
