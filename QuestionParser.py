@@ -80,7 +80,7 @@ class QuestionParser:
         return
 
     def induceWordsFromQuestionWord(self):
-        self.possible_words["Property"].append(self.specs.question_words[self.qWord])
+        self.possible_words["Property"] = self.possible_words["Property"] + (self.specs.question_words[self.qWord])
         self.possible_triples = self.tripleCombinations()
 
     def generateCombinations(self, a, aIndex, b, bIndex, ret):          ##recursively generates each pair given two lists
