@@ -25,11 +25,12 @@ class Element:
         pass                                    ##defines in subclasses
 
 class Triple:
-    def __init__(self, triple, tripleType):
+    def __init__(self, triple, tripleType, specs):
 
         #print("triple is " + str(triple))
         #print("triple specifictions: " + str(tripleType))
 
+        self.specs = specs
         self.object = type(Object)                  ##These fields will be set later, as we need the order from specs to know which element serves which function
         self.property = type(Property)
         self.result = type(Result)
@@ -60,7 +61,7 @@ class Triple:
 
         self.SQL =  "?superVar   wdt:P31    " + self.object.stringToSQL() + ";\n         " + self.property.stringToSQL() + '   ' + self.result.stringToSQL()
         if sort != None:
-            self.SQL +=  ";\n         ?sort     wdt:" + sort + '   ' + "?superVar"
+            self.SQL +=  ".\n         ?superVar     wdt:" + sort + '   ' + "?sort"
         self.variable = "?superVar  ?superVarLabel"
         self.targetVariable = "?superVarLabel"
 
@@ -69,14 +70,14 @@ class Triple:
 class Object(Element):
 
     def findSQL(self):
-        return 'wd:' + IDfinder(self.word, 'object').findIdentifier()           ##requests a Q ID
+        return 'wd:' + IDfinder(self.word, 'object', self.triple.specs).findIdentifier()           ##requests a Q ID
     def setTriple(self):
         self.triple.object = self                                               ##sets the triple's Object as itself (same logic for the others)
 
 class Property(Element):
 
     def findSQL(self):
-        return 'wdt:' + IDfinder(self.word, 'property').findIdentifier()        ##requests a P ID
+        return 'wdt:' + IDfinder(self.word, 'property', self.triple.specs).findIdentifier()        ##requests a P ID
 
     def setTriple(self):
         self.triple.property = self
@@ -84,7 +85,7 @@ class Property(Element):
 class Result(Element):
 
     def findSQL(self):
-        return 'wd:' + IDfinder(self.word, 'result').findIdentifier()
+        return 'wd:' + IDfinder(self.word, 'result', self.triple.specs).findIdentifier()
 
     def setTriple(self):
         self.triple.result = self

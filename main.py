@@ -40,7 +40,16 @@ spec1 = {
     'true_false_list':{"starters":['is', 'has', 'does', 'was'],
                        "somewhereInText": ['true', 'false', 'yes', 'no']},
     'tags_of_interest': ["JJ", "JJR", "JJS", "NN", "NNS", "NNP", "NNPS", "RB", "RBS", "RBR", "VB", "VBD", "VBG", "VBP", "VBZ"],
-    'print':True
+    'print':True,
+    'common_IDs':{"highest": "P2044",
+                  "high":"P2044",
+                  "longest": "P2043",
+                    "long":"P2043",
+                  "length":"P2043",
+                  "member":"P150",
+                  "county":"P150",
+                  "state":"P150"
+    }
 }
 ###the specs are passed to the outer class as an argument, several versions can be defined here separately
 ##########################################################################################################################

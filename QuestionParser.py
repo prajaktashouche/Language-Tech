@@ -56,9 +56,9 @@ class QuestionParser:
         if self.type == 'superlative':
             for token in self.nlp.tokens:
                 if token.tag_ == 'JJS':
-                    possible_sort_words = nounify(token.lemma_)
+                    possible_sort_words = [token.lemma_] + nounify(token.lemma_)
                     for word in possible_sort_words:
-                        ID = IDfinder(word, "property").findIdentifier()
+                        ID = IDfinder(word, "property", self.specs).findIdentifier()
                         if ID != '':
                             print("ID found for word " + word + ", ID is " + str(ID))
                             return ID
@@ -187,7 +187,7 @@ class QuestionParser:
         return triple.SQL
 
     def getTripleFromWordsAndFormat(self, words, format):
-        T = Triple(words, format)
+        T = Triple(words, format, self.specs)
         self.getVariableNames(T)
         return T
 
@@ -207,6 +207,6 @@ class QuestionParser:
 }
         """                                                             ##last part: gets labels for wikidata IDs
         if self.sort != None:
-            self.question_SQL += "\nORDER BY DESC{?sort)"
+            self.question_SQL += "\nORDER BY DESC(?sort)"
         #print(self.question_SQL)
         return self.question_SQL
