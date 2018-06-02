@@ -13,7 +13,7 @@ import sys
 
 ##############################################  define specification for the task here ###################################
 spec1 = {
-    'ignored_words':["is"],
+    'ignored_words':["is", "true", "false", "yes", "no", "list"],
     'question_words':{'What': ["instance of", "subclass of"],
                       'Who':["instance of"],
                       'Where': ['continent']
@@ -29,16 +29,18 @@ spec1 = {
                 ##regex stopword removal (kept for potential use later): (?:the|a|an)?\s*
                 },
     },
-    'deps':{"Object": ["pobj", "poss", "nsubj", "conj", "dobj"],                 ##we store here the possible deps (returned by spacy) for each element in a triple
+    'deps':{"Object": ["pobj", "poss", "nsubj", "conj", "dobj", "npadvmod"],                 ##we store here the possible deps (returned by spacy) for each element in a triple
             "Property" : ["attr", "nsubj", "acomp", "dobj"],
-            "Result": ["pobj", "attr", "acomp"]
+            "Result": ["pobj", "attr", "acomp", "advcl"]
             },
     'extended_deps':{"Object": ["dobj"],                 ##The deps that should be considered when looking at the synonims and nounified words
                         "Property" : ["ROOT"],
                         "Result": []
                     },
     'true_false_list':{"starters":['is', 'has', 'does', 'was'],
-                       "somewhereInText": ['true', 'false', 'yes', 'no']}
+                       "somewhereInText": ['true', 'false', 'yes', 'no']},
+    'tags_of_interest': ["JJ", "JJR", "JJS", "NN", "NNS", "NNP", "NNPS", "RB", "RBS", "RBR", "VB", "VBD", "VBG", "VBP", "VBZ"],
+    'print':True
 }
 ###the specs are passed to the outer class as an argument, several versions can be defined here separately
 ##########################################################################################################################

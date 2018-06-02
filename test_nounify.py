@@ -5,6 +5,7 @@ def nounify(word):
     result = []
     """ Transform a verb to the closest noun: die -> death """
     word = WordNetLemmatizer().lemmatize(word)
+    print('nounifying word' + str(word))
     word_synsets = wn.synsets(word)
 
     # Word not found
@@ -38,9 +39,9 @@ def nounify(word):
     # Build the result in the form of a list containing tuples (word, probability)
     result = result + [(w, float(words.count(w))/len_words) for w in set(words)]
     result.sort(key=lambda w: -w[1])
-    result = [[res[0]] for res in result]
-    #print("results are")
-    #print(result)
+    result = [res[0] for res in result]
+    print("results are")
+    print(result)
 
     # return all the possibilities sorted by probability
-    return result[:4]
+    return result

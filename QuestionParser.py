@@ -3,11 +3,16 @@ from Specs import *
 from TextNormalizer import *
 from NLP import *
 from test_nounify import *
+from word2number import w2n
 import re
+from nltk.stem import WordNetLemmatizer
+from IDfinder import *
+
 class QuestionParser:
     ###takes a string and creates a sparql query
 
     def __init__(self, question, specs):
+        self.lemmatizer = WordNetLemmatizer()
         self.specs = specs                   ##patterns, keywords, anything important could will be added here
         self.question = question  ##question string
         self.nlp = NLP(self.question, self.specs)
@@ -18,21 +23,28 @@ class QuestionParser:
         self.possible_words = self.parse_spacy()            ##dictionary that stores possible words in a triple by type (Object, Property, Result)
         self.question_SQL = ''                              ##the Sparql query will be stored here (as string)
         self.possible_triples = self.tripleCombinations()   ##the possible query triples are here
+        self.sort = self.getSortID()
         print("possible triples :")
         print(self.possible_triples)
         ##print(self.possible_triples)
         self.query_list = []                                ##the query statements (triples) are listed here
+
         ##self.parse_spacy()
 
     def determineQuestionType(self):
 
-        #check if true/false question:
+        #check if true/false question, and check if superlative or comparative::
 
         if self.nlp.tokens[0].text in self.specs.true_false_list['starters']:
             return 'true_false'
         for word in self.nlp.tokens:
             if word.text in self.specs.true_false_list['somewhereInText']:
                 return 'true_false'
+            if word.tag_ == 'JJS':
+                return "superlative"
+            if word.tag_ == 'JJR':
+                return 'comparative'
+
 
         #check if count type:
             #TODO
@@ -40,6 +52,17 @@ class QuestionParser:
         #rest is list type:
         return "list"
 
+    def getSortID(self):
+        if self.type == 'superlative':
+            for token in self.nlp.tokens:
+                if token.tag_ == 'JJS':
+                    possible_sort_words = nounify(token.lemma_)
+                    for word in possible_sort_words:
+                        ID = IDfinder(word, "property").findIdentifier()
+                        if ID != '':
+                            print("ID found for word " + word + ", ID is " + str(ID))
+                            return ID
+        return None
 
     def getQuestionWord(self):
         for word in self.nlp.tokens:
@@ -72,26 +95,40 @@ class QuestionParser:
             #print(possible_words[key])
         return possible_words
 
-    def extended_parse_spacy(self):
+    def extended_parse_spacy(self):                 ### the words with deps in the extended list are not added to the possible words, just their nounified versions
         for key, val in self.specs.extended_deps.items():
             for dep in val:
                 ##print(dep)
                 a = (self.nlp.returnDep(dep))
                 if a != None:
-                    self.possible_words[key] += a
+                    print("extending with dep " + str(dep) + ", list is " + str(a))
+                    for word in a:
+                        print("trying the word" + word)
+                        self.possible_words[key] += nounify(word)
+        self.possible_triples = self.tripleCombinations()
                     # print ("the " + key + "s of this sentence are ")
                     # print(possible_words[key])
 
+    def getNumberOfAnswers(self):
+        for token in self.nlp.tokens:
+            if token.tag_ == "CD":
+                #print("found token " + token.text + " as number")
+                try:
+                    return w2n.word_to_num(token.text)
+                except:
+                    return 0
+        return 0
+
     def addNounSynonims(self):
 
-        for key, list in self.possible_words.items():
-            for word in list:
+        for key, wordList in self.possible_words.items():
+            for word in list(wordList):
                 print("word is ")
-                print(word[0])
-                if isinstance(word[0], str):
-                    self.possible_words[key] = self.possible_words[key] + nounify(word[0])
+                print(word)
+                if isinstance(word, str):
+                    self.possible_words[key] += nounify(word)
             print("key is " + str(key) + " extended list is ")
-            print(list)
+            print(wordList)
 
         self.possible_triples = self.tripleCombinations()
         return
@@ -112,29 +149,30 @@ class QuestionParser:
     def tripleCombinations(self):      ##this returns a triple with one position being "", placeholder for the variable
         print("construction triples with input")
         print(self.possible_words)
-        possible_triples = {"Object":[],
-                            "Property":[],
-                            "Result":[]}
+
+        possible_triples = {"Result":[],            ##first one is result, as the queries are constructed in this order, and most questions target the result
+                            "Object":[],
+                            "Property":[]}
         a = self.possible_words["Object"]
         b = self.possible_words["Property"]
         if a and b:
             for combination in self.generateCombinations(a,0,b ,0, []):
                 if combination[0] != combination[1]:        ##same word should not appear in 2 positions
-                    possible_triples["Result"].append([combination[0], combination[1], ""] )
+                    possible_triples["Result"].append([self.lemmatizer.lemmatize(combination[0]), self.lemmatizer.lemmatize(combination[1]), ""] )
 
         a = self.possible_words["Object"]
         b = self.possible_words["Result"]
         if a and b:
             for combination in self.generateCombinations(a, 0, b, 0, []):
                 if combination[0] != combination[1]:  ##same word should not appear in 2 positions
-                    possible_triples["Property"].append([combination[0], "", combination[1]])
+                    possible_triples["Property"].append([self.lemmatizer.lemmatize(combination[0]), "", self.lemmatizer.lemmatize(combination[1])])
 
         a = self.possible_words["Property"]
         b = self.possible_words["Result"]
         if a and b:
             for combination in self.generateCombinations(a, 0, b, 0, []):
                 if combination[0] != combination[1]:  ##same word should not appear in 2 positions
-                    possible_triples["Object"].append(["",combination[0], combination[1]])
+                    possible_triples["Object"].append(["",self.lemmatizer.lemmatize(combination[0]), self.lemmatizer.lemmatize(combination[1])])
         return possible_triples
 
 
@@ -150,10 +188,13 @@ class QuestionParser:
 
     def getTripleFromWordsAndFormat(self, words, format):
         T = Triple(words, format)
-        self.variable = T.variable
-        self.targetVariable = T.targetVariable
+        self.getVariableNames(T)
         return T
 
+    def getVariableNames(self, triple):
+        print("Passing variable names, var is " + triple.variable + "targetvar is " + triple.targetVariable)
+        self.variable = triple.variable
+        self.targetVariable = triple.targetVariable
 
     def constructQuery(self, queryBody):
         self.question_SQL = "SELECT " + self.variable + """ WHERE {
@@ -162,8 +203,10 @@ class QuestionParser:
         self.question_SQL = self.question_SQL + """
         SERVICE wikibase:label {
         bd:serviceParam wikibase:language "en" .                        
-        } 
+        }
 }
         """                                                             ##last part: gets labels for wikidata IDs
+        if self.sort != None:
+            self.question_SQL += "\nORDER BY DESC{?sort)"
         #print(self.question_SQL)
         return self.question_SQL

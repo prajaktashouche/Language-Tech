@@ -19,10 +19,9 @@ class NLP:
         ret = []
         ##print(type(self.tokens))
         for w in range(0,len(self.tokens)):
-            print(self.tokens[w].dep_)
-            print(self.tokens[w])
+            print("word is " + str(self.tokens[w]) + " dep is " + str(self.tokens[w].dep_) + " tag is " + str(self.tokens[w].tag_))
             ##print(w)
-            if self.tokens[w].dep_ == dep and not self.tokens[w].text in list(self.specs.question_words.keys()) and not self.tokens[w].text in self.specs.ignored_words:
+            if self.tokens[w].dep_ == dep and not self.tokens[w].text in list(self.specs.question_words.keys()) and not self.tokens[w].text.lower() in self.specs.ignored_words and str(self.tokens[w].tag_) in self.specs.tags_of_interest:
                 instance = []
                 instance.append(self.tokens[w].text)
                 i = w-1

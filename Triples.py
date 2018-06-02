@@ -55,6 +55,17 @@ class Triple:
             element = Result(word, isVariable, self)
         element.setTriple()
 
+    def constructSuperlativeSparql(self, sort):
+
+
+        self.SQL =  "?superVar   wdt:P31    " + self.object.stringToSQL() + ";\n         " + self.property.stringToSQL() + '   ' + self.result.stringToSQL()
+        if sort != None:
+            self.SQL +=  ";\n         ?sort     wdt:" + sort + '   ' + "?superVar"
+        self.variable = "?superVar  ?superVarLabel"
+        self.targetVariable = "?superVarLabel"
+
+        print("var is " + self.variable + "targetvar is " + self.targetVariable)
+
 class Object(Element):
 
     def findSQL(self):
