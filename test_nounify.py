@@ -43,4 +43,4 @@ def nounify(word):
     #print(result)
 
     # return all the possibilities sorted by probability
-    return result
+    return result[:4]

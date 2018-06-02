@@ -9,11 +9,11 @@ class QuestionParser:
 
     def __init__(self, question, specs):
         self.specs = specs                   ##patterns, keywords, anything important could will be added here
-        self.type = 'list'                                  ##for now we do not expect any other type
+        self.question = question  ##question string
+        self.nlp = NLP(self.question, self.specs)
+        self.type = self.determineQuestionType()            ##true_false, count or list (single answer is just a list with 1 element)
         self.variable = ''                                  ##the variable names that will be in the SELECT command
         self.targetVariable = ''                            ##the variable which will be printed in the end
-        self.question = question                            ##question string
-        self.nlp = NLP(self.question, self.specs)
         self.qWord = self.getQuestionWord()
         self.possible_words = self.parse_spacy()            ##dictionary that stores possible words in a triple by type (Object, Property, Result)
         self.question_SQL = ''                              ##the Sparql query will be stored here (as string)
@@ -23,6 +23,23 @@ class QuestionParser:
         ##print(self.possible_triples)
         self.query_list = []                                ##the query statements (triples) are listed here
         ##self.parse_spacy()
+
+    def determineQuestionType(self):
+
+        #check if true/false question:
+
+        if self.nlp.tokens[0].text in self.specs.true_false_list['starters']:
+            return 'true_false'
+        for word in self.nlp.tokens:
+            if word.text in self.specs.true_false_list['somewhereInText']:
+                return 'true_false'
+
+        #check if count type:
+            #TODO
+
+        #rest is list type:
+        return "list"
+
 
     def getQuestionWord(self):
         for word in self.nlp.tokens:
@@ -50,7 +67,7 @@ class QuestionParser:
                 ##print(dep)
                 a = (self.nlp.returnDep(dep))
                 if a != None:
-                    possible_words[key].append(a)
+                    possible_words[key]+= a
             #print ("the " + key + "s of this sentence are ")
             #print(possible_words[key])
         return possible_words
@@ -61,7 +78,7 @@ class QuestionParser:
                 ##print(dep)
                 a = (self.nlp.returnDep(dep))
                 if a != None:
-                    self.possible_words[key].append(a)
+                    self.possible_words[key] += a
                     # print ("the " + key + "s of this sentence are ")
                     # print(possible_words[key])
 
@@ -102,19 +119,22 @@ class QuestionParser:
         b = self.possible_words["Property"]
         if a and b:
             for combination in self.generateCombinations(a,0,b ,0, []):
-                possible_triples["Result"].append([combination[0], combination[1], ""] )
+                if combination[0] != combination[1]:        ##same word should not appear in 2 positions
+                    possible_triples["Result"].append([combination[0], combination[1], ""] )
 
         a = self.possible_words["Object"]
         b = self.possible_words["Result"]
         if a and b:
             for combination in self.generateCombinations(a, 0, b, 0, []):
-                possible_triples["Property"].append([combination[0], "", combination[1]])
+                if combination[0] != combination[1]:  ##same word should not appear in 2 positions
+                    possible_triples["Property"].append([combination[0], "", combination[1]])
 
         a = self.possible_words["Property"]
         b = self.possible_words["Result"]
         if a and b:
             for combination in self.generateCombinations(a, 0, b, 0, []):
-                possible_triples["Object"].append(["",combination[0], combination[1]])
+                if combination[0] != combination[1]:  ##same word should not appear in 2 positions
+                    possible_triples["Object"].append(["",combination[0], combination[1]])
         return possible_triples
 
 
@@ -145,5 +165,5 @@ class QuestionParser:
         } 
 }
         """                                                             ##last part: gets labels for wikidata IDs
-        print(self.question_SQL)
+        #print(self.question_SQL)
         return self.question_SQL

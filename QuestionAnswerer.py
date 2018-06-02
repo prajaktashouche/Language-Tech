@@ -21,7 +21,8 @@ class QuestionAnswerer:
 
     def runNLPwithTripleList(self):
         for key, tripleList in self.question.possible_triples.items():
-            for triple in tripleList:
+            for triple in list(tripleList):         ##creating a copy, so i can pop from the original
+                tripleList.pop(tripleList.index(triple))
                 try:
                     print("triple is :")
                     print(triple)
@@ -29,12 +30,12 @@ class QuestionAnswerer:
                     #print("format is ")
                     #print(self.question.specs.basic_question_formats[key])
                     q= self.question.constructQuery(self.question.queryStatementFromTriple(self.question.getTripleFromWordsAndFormat(triple, self.question.specs.basic_question_formats[key])))
-                    print(q)
+                    #print(q)
                     self.data = requests.get(self.url, params={'query': q, 'format': 'json'}).json()
                     ##print(self.data)
-                    if self.data["results"]["bindings"] != []:          ##not just proper query, but also got answers
+                    if self.data["results"]["bindings"] != []:          ##not just proper query, but check if we also got answers
                         return True
-                except:
+                except:                                                 ##no query constructed with the triple, so we try the next one
                     pass
         return False
 
@@ -55,19 +56,28 @@ class QuestionAnswerer:
 
     def getAnswer(self):
         if self.data:
+            print("question is ")
+            print(self.question.question)
+            print(" with type " + self.question.type)
             ###this defines what to print, based on the type. Currently there are only list type (simple answer ~ list one), so the others are not implemented
             #print(data)
             i=0
             #print(num)
             #self.question.constructQuery()
-            if self.question.type == "true_false":
-                ####TODO
+            if self.question.type == "true_false":              ##checks if any of the results from the query is the same as some word in the question (like 'is it true, that the capital of the Netherlands is Amsterdam?' --> Netherlands, capital --> query gives Amsterdam --> chacks if in the question --> print yes
                 print(self.question.question)
-                if query[arg]["target"] == data["results"]["bindings"][0][query[arg]["variable"]]["value"]:
-                    print("yes")
-                else:
-                    print("no")
-                exit()
+                while len(self.question.possible_triples["Result"])>0 or len(self.question.possible_triples["Property"])>0 or len(self.question.possible_triples["Object"])>0:
+                    for answer in self.data["results"]["bindings"]:
+                        for word in self.question.nlp.tokens:
+                            if word.text == answer[(self.question.targetVariable)[1:]]['value']:
+                                print("yes")
+                                return
+                    print("match not found, restarting the queries, number of possible triples remainig:")
+                    print("Object: " + str(len(self.question.possible_triples["Object"])) + "Property: " + str(len(self.question.possible_triples["Property"])) + "Result: " + str(len(self.question.possible_triples["Result"])))
+                    self.runNLP()                               ##the firs successful query did not give the correct answer, so we run the next
+
+                print("no")
+                return
 
             if self.question.type == "list" or self.question.type == "count":
                 num = len(self.data['results']['bindings'])

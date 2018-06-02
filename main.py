@@ -31,12 +31,14 @@ spec1 = {
     },
     'deps':{"Object": ["pobj", "poss", "nsubj", "conj", "dobj"],                 ##we store here the possible deps (returned by spacy) for each element in a triple
             "Property" : ["attr", "nsubj", "acomp", "dobj"],
-            "Result": ["pobj"]
+            "Result": ["pobj", "attr", "acomp"]
             },
     'extended_deps':{"Object": ["dobj"],                 ##The deps that should be considered when looking at the synonims and nounified words
                         "Property" : ["ROOT"],
                         "Result": []
-                    }
+                    },
+    'true_false_list':{"starters":['is', 'has', 'does', 'was'],
+                       "somewhereInText": ['true', 'false', 'yes', 'no']}
 }
 ###the specs are passed to the outer class as an argument, several versions can be defined here separately
 ##########################################################################################################################

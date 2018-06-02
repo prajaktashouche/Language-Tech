@@ -11,3 +11,4 @@ class Specification:
         self.deps = specList['deps']
         self.basic_question_formats = specList['basic_question_formats']
         self.extended_deps = specList['extended_deps']
+        self.true_false_list = specList['true_false_list']
