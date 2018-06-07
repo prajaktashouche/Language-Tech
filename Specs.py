@@ -12,6 +12,7 @@ class Specification:
         self.basic_question_formats = specList['basic_question_formats']
         self.extended_deps = specList['extended_deps']
         self.true_false_list = specList['true_false_list']
+        self.count_list = specList["count_list"]
         self.tags_of_interest = specList['tags_of_interest']
         self.print = specList["print"]
         self.common_IDs = specList["common_IDs"]

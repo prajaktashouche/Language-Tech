@@ -1,6 +1,7 @@
 import requests
 import sys
 from termcolor import colored
+from IDfinder import *
 
 ##this clss takes a questionParser object as an argument. Sends the query as a request and prints the answer
 
@@ -11,6 +12,7 @@ class QuestionAnswerer:
         self.data = None
         self.question = question
         self.triedAllExtensions = False
+        self.popped = ""
 
 
     def runRegex(self):
@@ -24,6 +26,7 @@ class QuestionAnswerer:
         for key, tripleList in self.question.possible_triples.items():
             for tripleString in list(tripleList):         ##creating a copy, so i can pop from the original
                 tripleList.pop(tripleList.index(tripleString))
+                self.popped = tripleString
                 try:
                     print("triple is :")
                     print(tripleString)
@@ -110,16 +113,78 @@ class QuestionAnswerer:
             print("no")
             return
 
+        if self.question.type == "comparative_list":
+            print("type is list comparative")
+            ##first we have to check what is the type of objects we have to list: What countries are bigger then Franc --> France is instance of Country...
+            instance = ""
+            for object in self.question.possible_words["Object"]:
+                try:
+                    instance = "wd:" + requests.get(self.url, params = {'query':self.question.constructQuery(self.question.queryStatementFromTriple(self.question.getTripleFromWordsAndFormat([object, "instance of", ""], self.question.specs.basic_question_formats["Result"]))), 'format': 'json'}).json()["results"]["bindings"][0][("?var")[1:]]['value'].split("/")[-1:][0]
+                    print("instance found " + str(instance))
+                    break
+                except:
+                    print("could not get answer for query, when looking for the instance in superlative")
+                    continue
+            if instance != "":
+                property_ID = "wdt:" + IDfinder(self.question.possible_words["Property"][0], 'property', self.question.specs).findIdentifier()
+                self.question.sort = property_ID
+                self.runNLP()
+                print(self.data)
+                limit = int(self.data['results']['bindings'][0][(self.question.targetVariable)[1:]]['value'])
+                print("limit is " + str(limit))
+                self.question.possible_words["Object"] = []             ##we remove the objects and the results, since we want to run queries for objects that are the instances of the same category as the initial object
+                self.question.possible_words["Result"] = [instance]
 
-        # if self.question.type == "list" or self.question.type == "count":
-        #     self.runNLP()
-        #     num = len(self.data['results']['bindings'])
-        # else:
-        #     ####TODO
-        #     num = query[arg]["numberOfAnswers"]
+                print("listing valid answers, property is " + property_ID)
+
+                queryBody = "?var    wdt:P31    " + instance + ";\n        " + property_ID + "    ?sort"
+                self.question.sort = 1
+                self.question.variable += " ?sort "
+                try:
+                    results  = requests.get(self.url, params = {'query':self.question.constructQuery(queryBody), 'format': 'json'}).json()["results"]["bindings"]
+                except:
+                    print("could not get the list of objects of type " + str(instance) + " with property " + property_ID + " (in comparative listing)")
+                    return
+                current = 0
+                index = 0
+                currentLabel = ""
+                while True:
+                    try:
+                        currentLabel = results[index][("?varLabel")[1:]]['value']
+                        current = int(results[index][("?sort")[1:]]['value'])
+                        if current<=limit:
+                            break
+                        print(currentLabel)
+                        index += 1
+                    except:
+                        print(currentLabel)
+                        index += 1
+                        pass
+
+
+        if self.question.type == "comparative_objects":
+            print("type is object comparative")
+            self.runNLP()       ##gettinh result for the first object
+            data1 = self.data
+            firstWord = self.popped[0]
+            self.runNLP()       ##getting result for the second
+
+            if data1['results']['bindings'][0][(self.question.targetVariable)[1:]]['value'] > self.data['results']['bindings'][0][(self.question.targetVariable)[1:]]['value']:
+                print(firstWord)
+            else:
+                print(self.popped[0])
 
         if self.question.type == "count":
-            ####TODO
+            if self.runNLP():
+                c = 0
+            #########################################
+
+                for answer in self.data['results']['bindings']:
+                    if answer == '':
+                        print('no answer found')
+                    else:
+                        c += 1
+                print(c)
             pass
 
         if self.question.type == 'superlative':

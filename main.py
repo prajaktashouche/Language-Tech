@@ -29,7 +29,7 @@ spec1 = {
                 ##regex stopword removal (kept for potential use later): (?:the|a|an)?\s*
                 },
     },
-    'deps':{"Object": ["pobj", "poss", "nsubj", "conj", "dobj", "npadvmod"],                 ##we store here the possible deps (returned by spacy) for each element in a triple
+    'deps':{"Object": ["pobj", "poss", "nsubj", "conj", "dobj", "npadvmod", "appos"],                 ##we store here the possible deps (returned by spacy) for each element in a triple
             "Property" : ["attr", "nsubj", "acomp", "dobj"],
             "Result": ["pobj", "attr", "acomp", "advcl"]
             },
@@ -37,18 +37,26 @@ spec1 = {
                         "Property" : ["ROOT"],
                         "Result": []
                     },
-    'true_false_list':{"starters":['is', 'has', 'does', 'was'],
+    'true_false_list':{"starters":['is', 'has', 'does', 'was', 'do'],
                        "somewhereInText": ['true', 'false', 'yes', 'no']},
+    'count_list':{"singles":["count"],          #single words
+                "doubles":["how many", "how much"]},         #two word expressions
     'tags_of_interest': ["JJ", "JJR", "JJS", "NN", "NNS", "NNP", "NNPS", "RB", "RBS", "RBR", "VB", "VBD", "VBG", "VBP", "VBZ"],
     'print':True,
     'common_IDs':{"highest": "P2044",
                   "high":"P2044",
+                  "higher":"P2044",
                   "longest": "P2043",
                     "long":"P2043",
+                  "longer":"P2043",
                   "length":"P2043",
                   "member":"P150",
                   "county":"P150",
-                  "state":"P150"
+                  "state":"P150",
+                  "language":"P37",
+                  "bigger":"P2046",
+                    "big":"P2046",
+                  "size":"P2046"
     }
 }
 ###the specs are passed to the outer class as an argument, several versions can be defined here separately

@@ -7,23 +7,27 @@ from word2number import w2n
 import re
 from nltk.stem import WordNetLemmatizer
 from IDfinder import *
+import requests
 
 class QuestionParser:
     ###takes a string and creates a sparql query
 
     def __init__(self, question, specs):
+        self.url = 'https://query.wikidata.org//sparql'
         self.lemmatizer = WordNetLemmatizer()
         self.specs = specs                   ##patterns, keywords, anything important could will be added here
         self.question = question  ##question string
         self.nlp = NLP(self.question, self.specs)
+        self.possible_words = self.parse_spacy()  ##dictionary that stores possible words in a triple by type (Object, Property, Result)
+        self.sort = None
         self.type = self.determineQuestionType()            ##true_false, count or list (single answer is just a list with 1 element)
         self.variable = ''                                  ##the variable names that will be in the SELECT command
         self.targetVariable = ''                            ##the variable which will be printed in the end
         self.qWord = self.getQuestionWord()
-        self.possible_words = self.parse_spacy()            ##dictionary that stores possible words in a triple by type (Object, Property, Result)
+
         self.question_SQL = ''                              ##the Sparql query will be stored here (as string)
         self.possible_triples = self.tripleCombinations()   ##the possible query triples are here
-        self.sort = self.getSortID()
+
         print("possible triples :")
         print(self.possible_triples)
         ##print(self.possible_triples)
@@ -37,13 +41,22 @@ class QuestionParser:
 
         if self.nlp.tokens[0].text in self.specs.true_false_list['starters']:
             return 'true_false'
+        prevText = ""
         for word in self.nlp.tokens:
-            if word.text in self.specs.true_false_list['somewhereInText']:
+            text = word.text.lower()            #converting to lowercase as the keywords in the specs are lowercase
+            if text in self.specs.true_false_list['somewhereInText']:
                 return 'true_false'
+            if text in self.specs.count_list['singles'] or ( prevText + " " + text) in self.specs.count_list['doubles']:
+                return 'count'
             if word.tag_ == 'JJS':
+                self.getSortID()
                 return "superlative"
             if word.tag_ == 'JJR':
-                return 'comparative'
+                if self.isListComparative():
+                    return 'comparative_list'
+                else:
+                    return 'comparative_objects'
+            prevText = text
 
 
         #check if count type:
@@ -51,6 +64,40 @@ class QuestionParser:
 
         #rest is list type:
         return "list"
+
+    def isListComparative(self):            ##in case a comparative adjective is found, determines if it compares objects (what is bigger, France or Germany), or wants us to list things (What is bigger than France)
+        ##property should be found in the common list
+        for word in self.nlp.tokens:
+            if word.text in self.specs.common_IDs:
+                self.possible_words['Property'] = [word.text]       ##if properrty found, we know that it is the property of interest, we can delete others
+                break
+        ##check if there are two objects, that are the instance of the same thing, e.g. Germany and France instance of country
+        for i in range(0,len(self.possible_words["Object"])):
+            for j in range(i + 1,len(self.possible_words["Object"])):
+                try:
+                    #print("starting try block for comparative instances")
+                    #print("words are")
+                    #print(self.possible_words["Object"][i])
+                    #print(self.possible_words["Object"][j])
+
+                    data1 = requests.get(self.url, params = {'query':self.constructQuery(self.queryStatementFromTriple(self.getTripleFromWordsAndFormat([self.possible_words["Object"][i], "instance of", ""], self.specs.basic_question_formats["Result"]))), 'format': 'json'}).json()
+                    data2 = requests.get(self.url, params = {'query':self.constructQuery(self.queryStatementFromTriple(self.getTripleFromWordsAndFormat([self.possible_words["Object"][j], "instance of", ""], self.specs.basic_question_formats["Result"]))), 'format': 'json'}).json()
+                    #print("both queries succeeded")
+                    for answer1 in data1['results']['bindings']:
+                        for answer2 in data2['results']['bindings']:
+                            if (answer1[(self.targetVariable)[1:]]['value'] == answer2[(self.targetVariable)[1:]]['value']):
+                                print("comparing" + str(answer1) + " and " + str(answer2))
+                                self.possible_words['Object'] = [self.possible_words["Object"][i], self.possible_words["Object"][j]]              #if match found, we know that these are the objects of interest, no need for other possible objects
+                                self.possible_words['Result'] = []
+                                return False
+                except:
+                    print("an error occured while comparing the words")
+                    print(self.possible_words["Object"][i])
+                    print(self.possible_words["Object"][j])
+                    pass
+
+        return True
+
 
     def getSortID(self):
         if self.type == 'superlative':
@@ -184,6 +231,8 @@ class QuestionParser:
         return ret
 
     def queryStatementFromTriple(self, triple):
+        #print("triple query statement is ")
+        #print(triple.SQL)
         return triple.SQL
 
     def getTripleFromWordsAndFormat(self, words, format):
@@ -197,6 +246,7 @@ class QuestionParser:
         self.targetVariable = triple.targetVariable
 
     def constructQuery(self, queryBody):
+        #print("constructing query with " + queryBody)
         self.question_SQL = "SELECT " + self.variable + """ WHERE {
         """
         self.question_SQL = self.question_SQL + queryBody
@@ -206,7 +256,8 @@ class QuestionParser:
         }
 }
         """                                                             ##last part: gets labels for wikidata IDs
+        #print("checking for sort")
         if self.sort != None:
             self.question_SQL += "\nORDER BY DESC(?sort)"
-        #print(self.question_SQL)
+        print(self.question_SQL)
         return self.question_SQL
