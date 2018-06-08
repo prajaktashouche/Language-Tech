@@ -1,5 +1,4 @@
 
-
 from QuestionParser import *
 from QuestionAnswerer import *
 
@@ -16,7 +15,8 @@ spec1 = {
     'ignored_words':["is", "true", "false", "yes", "no", "list"],
     'question_words':{'What': ["instance of", "subclass of"],
                       'Who':["instance of"],
-                      'Where': ['continent']
+                      'Where': ['continent'],
+		      'When': ['point in time','start time','end time']
                       },
     'basic_question_formats':{"Object":[{'variable':'Object'},'Property', 'Result'],
                         "Property":['Object', {'variable':'Property'}, 'Result'],
@@ -30,12 +30,12 @@ spec1 = {
                 },
     },
     'deps':{"Object": ["pobj", "poss", "nsubj", "conj", "dobj", "npadvmod", "appos"],                 ##we store here the possible deps (returned by spacy) for each element in a triple
-            "Property" : ["attr", "nsubj", "acomp", "dobj"],
-            "Result": ["pobj", "attr", "acomp", "advcl"]
+            "Property" : ["attr", "nsubj", "acomp", "dobj","pcomp"],
+            "Result": ["attr", "acomp", "advcl"]
             },
-    'extended_deps':{"Object": ["dobj"],                 ##The deps that should be considered when looking at the synonims and nounified words
-                        "Property" : ["ROOT"],
-                        "Result": []
+    'extended_deps':{"Object": ["dobj","compound"],                 ##The deps that should be considered when looking at the synonims and nounified words
+                        "Property" : ["ROOT","acl"],
+                        "Result": ["pobj"]
                     },
     'true_false_list':{"starters":['is', 'has', 'does', 'was', 'do'],
                        "somewhereInText": ['true', 'false', 'yes', 'no']},
@@ -55,7 +55,7 @@ spec1 = {
                   "state":"P150",
                   "language":"P37",
                   "bigger":"P2046",
-                    "big":"P2046",
+                  "big":"P2046",
                   "size":"P2046"
     }
 }

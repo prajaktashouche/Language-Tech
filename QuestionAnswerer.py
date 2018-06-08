@@ -63,6 +63,11 @@ class QuestionAnswerer:
         if self.runNLPwithTripleList():
             return True
 
+	
+	self.question.induceWordsFromQuestionWord()    #Last resort: check with question words
+	if self.runNLPwithTripleList():
+            		return True
+
         self.triedAllExtensions = True
         print("Could not construct query for the question :" + self.question.question)
         return False

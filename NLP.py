@@ -30,6 +30,7 @@ class NLP:
                     #print("adding " + str(self.tokens[i].text))
                     i = i-1
                 ret.append(" ".join(reversed(instance)))
+		
         if ret != []:
             ##print(ret)
             return ret
