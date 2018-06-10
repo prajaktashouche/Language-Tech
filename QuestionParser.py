@@ -1,3 +1,6 @@
+
+
+
 from Triples import *
 from Specs import *
 from TextNormalizer import *
@@ -8,6 +11,8 @@ import re
 from nltk.stem import WordNetLemmatizer
 from IDfinder import *
 import requests
+import spacy
+nlp = spacy.load('en_core_web_sm')
 
 class QuestionParser:
     ###takes a string and creates a sparql query
@@ -181,7 +186,7 @@ class QuestionParser:
         return
 
     def induceWordsFromQuestionWord(self):
-	if self.qWord != None:
+	    if self.qWord != None:                      #fixed
         	self.possible_words["Property"] = self.possible_words["Property"] + (self.specs.question_words[self.qWord])
         	self.possible_triples = self.tripleCombinations()
 
