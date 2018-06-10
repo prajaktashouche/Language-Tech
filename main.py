@@ -53,6 +53,7 @@ spec1 = {
                   "longer":"P2043",
                   "length":"P2043",
                   "member":"P150",
+                  "part":"P361",                #part -> part of
                   "county":"P150",
                   "state":"P150",
                   "language":"P37",            #language -> official language
