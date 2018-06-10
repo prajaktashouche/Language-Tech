@@ -10,7 +10,6 @@ class TextNormalizer:
         self.nouns_adjectiveTags = ["JJ", "JJR", "JJS", "NN", "NNS", "NNP", "NNPS"]         ###although we only need nouns, i found the pos tag to mistake nouns for adjectives
         ##ll relevant (for later use) #["JJ", "JJR", "JJS", "NN", "NNS", "NNP", "NNPS", "RB", "RBS", "RBR", "VB", "VBD", "VBG", "VBP", "VBZ"]
     def allowedTagKeeper(self, allowed):
-
         allowedTags = []
         if allowed == 'noun':                   ##for now only nouns are defined, later more can be added
             allowedTags = self.nounTags

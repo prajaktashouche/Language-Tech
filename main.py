@@ -1,3 +1,5 @@
+## Issues: Inconsistent use of tabs and spaces in indentation 184 QuestionParser
+
 
 from QuestionParser import *
 from QuestionAnswerer import *
@@ -47,16 +49,16 @@ spec1 = {
                   "high":"P2044",
                   "higher":"P2044",
                   "longest": "P2043",
-                    "long":"P2043",
+                  "long":"P2043",
                   "longer":"P2043",
                   "length":"P2043",
                   "member":"P150",
                   "county":"P150",
                   "state":"P150",
-                  "language":"P37",
+                  "language":"P37",            #language -> official language
                   "bigger":"P2046",
                   "big":"P2046",
-                  "size":"P2046"
+                  "size":"P2046",
     }
 }
 ###the specs are passed to the outer class as an argument, several versions can be defined here separately
