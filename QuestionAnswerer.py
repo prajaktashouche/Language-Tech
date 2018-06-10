@@ -2,6 +2,8 @@ import requests
 import sys
 from termcolor import colored
 from IDfinder import *
+import spacy
+nlp = spacy.load('en')
 
 ##this clss takes a questionParser object as an argument. Sends the query as a request and prints the answer
 
@@ -53,6 +55,7 @@ class QuestionAnswerer:
     def runNLP(self):
         ## First try: only the words in the question
         print(colored('Start with existing list', 'green'))
+
         if self.runNLPwithTripleList():
             return True
         ##Second try: expand the list with nounified versions and synonims
@@ -62,12 +65,10 @@ class QuestionAnswerer:
         self.question.extended_parse_spacy()            ## then add nouns and synonims for the tags in the extended list
         if self.runNLPwithTripleList():
             return True
-
-	
-	self.question.induceWordsFromQuestionWord()    #Last resort: check with question words
-	if self.runNLPwithTripleList():
-            		return True
-
+        else:
+            self.question.induceWordsFromQuestionWord()    #Last resort: check with question words
+	    #  if self.runNLPwithTripleList():         #fixed
+        #     return True
         self.triedAllExtensions = True
         print("Could not construct query for the question :" + self.question.question)
         return False
