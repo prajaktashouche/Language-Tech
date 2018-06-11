@@ -1,3 +1,4 @@
+## Issues: Inconsistent use of tabs and spaces in indentation 184 QuestionParser
 
 
 from QuestionParser import *
@@ -16,7 +17,8 @@ spec1 = {
     'ignored_words':["is", "true", "false", "yes", "no", "list"],
     'question_words':{'What': ["instance of", "subclass of"],
                       'Who':["instance of"],
-                      'Where': ['continent']
+                      'Where': ['continent'],
+		      'When': ['point in time','start time','end time']
                       },
     'basic_question_formats':{"Object":[{'variable':'Object'},'Property', 'Result'],
                         "Property":['Object', {'variable':'Property'}, 'Result'],
@@ -30,12 +32,12 @@ spec1 = {
                 },
     },
     'deps':{"Object": ["pobj", "poss", "nsubj", "conj", "dobj", "npadvmod", "appos"],                 ##we store here the possible deps (returned by spacy) for each element in a triple
-            "Property" : ["attr", "nsubj", "acomp", "dobj"],
-            "Result": ["pobj", "attr", "acomp", "advcl"]
+            "Property" : ["attr", "nsubj", "acomp", "dobj","pcomp"],
+            "Result": ["attr", "acomp", "advcl"]
             },
-    'extended_deps':{"Object": ["dobj"],                 ##The deps that should be considered when looking at the synonims and nounified words
-                        "Property" : ["ROOT"],
-                        "Result": []
+    'extended_deps':{"Object": ["dobj","compound"],                 ##The deps that should be considered when looking at the synonims and nounified words
+                        "Property" : ["ROOT","acl"],
+                        "Result": ["pobj"]
                     },
     'true_false_list':{"starters":['is', 'has', 'does', 'was', 'do'],
                        "somewhereInText": ['true', 'false', 'yes', 'no']},
@@ -47,16 +49,21 @@ spec1 = {
                   "high":"P2044",
                   "higher":"P2044",
                   "longest": "P2043",
-                    "long":"P2043",
+                  "long":"P2043",
                   "longer":"P2043",
                   "length":"P2043",
                   "member":"P150",
+                  "part":"P361",                #part -> part of
                   "county":"P150",
                   "state":"P150",
-                  "language":"P37",
+                  "language":"P37",            #language -> official language
                   "bigger":"P2046",
-                    "big":"P2046",
-                  "size":"P2046"
+                  "big":"P2046",
+                  "size":"P2046",
+                  "is":"P31",
+                  "administrative territory":"P150",
+                  "territory":"P150",
+                  "time period":"P2348"
     }
 }
 ###the specs are passed to the outer class as an argument, several versions can be defined here separately

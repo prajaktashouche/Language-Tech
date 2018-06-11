@@ -1,3 +1,6 @@
+
+
+
 from Triples import *
 from Specs import *
 from TextNormalizer import *
@@ -8,6 +11,8 @@ import re
 from nltk.stem import WordNetLemmatizer
 from IDfinder import *
 import requests
+import spacy
+nlp = spacy.load('en_core_web_sm')
 
 class QuestionParser:
     ###takes a string and creates a sparql query
@@ -39,7 +44,7 @@ class QuestionParser:
 
         #check if true/false question, and check if superlative or comparative::
 
-        if self.nlp.tokens[0].text in self.specs.true_false_list['starters']:
+        if self.nlp.tokens[0].text.lower() in self.specs.true_false_list['starters']:
             return 'true_false'
         prevText = ""
         for word in self.nlp.tokens:
@@ -48,7 +53,7 @@ class QuestionParser:
                 return 'true_false'
             if text in self.specs.count_list['singles'] or ( prevText + " " + text) in self.specs.count_list['doubles']:
                 return 'count'
-            if word.tag_ == 'JJS':
+            if word.tag_ == 'JJS' and word.dep_!= 'amod':
                 self.getSortID()
                 return "superlative"
             if word.tag_ == 'JJR':
@@ -166,6 +171,9 @@ class QuestionParser:
                     return 0
         return 0
 
+    def addInstance(self):
+        self.possible_words["Property"] = self.possible_words["Property"] + (self.specs.question_words["instance"])
+
     def addNounSynonims(self):
 
         for key, wordList in self.possible_words.items():
@@ -181,8 +189,9 @@ class QuestionParser:
         return
 
     def induceWordsFromQuestionWord(self):
-        self.possible_words["Property"] = self.possible_words["Property"] + (self.specs.question_words[self.qWord])
-        self.possible_triples = self.tripleCombinations()
+	    if self.qWord != None:                      #fixed
+        	self.possible_words["Property"] = self.possible_words["Property"] + (self.specs.question_words[self.qWord])
+        	self.possible_triples = self.tripleCombinations()
 
     def generateCombinations(self, a, aIndex, b, bIndex, ret):          ##recursively generates each pair given two lists
         ret.append([a[aIndex], b[bIndex]])

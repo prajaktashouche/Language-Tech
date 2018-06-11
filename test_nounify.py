@@ -1,11 +1,23 @@
 from nltk.corpus import wordnet as wn
 from nltk.stem import WordNetLemmatizer
+import spacy
+
+nlp = spacy.load('en')
 
 def nounify(word):
     result = []
     """ Transform a verb to the closest noun: die -> death """
     word = WordNetLemmatizer().lemmatize(word)
-    print('nounifying word' + str(word))
+
+    #alternate, spacy method
+    #newWord = nlp(word)
+    #for w in newWord:
+       # word = w.lemma_
+      #  print(word)
+    #word = newWord.lemma_
+    ## end spacy method
+
+    print('nounifying word ' + str(word))
     word_synsets = wn.synsets(word)
 
     # Word not found

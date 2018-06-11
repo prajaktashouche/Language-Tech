@@ -14,9 +14,9 @@ class Specification:
         self.true_false_list = specList['true_false_list']
         self.count_list = specList["count_list"]
         self.tags_of_interest = specList['tags_of_interest']
-        self.print = specList["print"]
+        self.prints = specList["print"]
         self.common_IDs = specList["common_IDs"]
 
     def printConditional(self, string):
-        if self.print:
-            print(string)
+        if self.prints:
+            prints(string)
