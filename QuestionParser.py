@@ -171,6 +171,9 @@ class QuestionParser:
                     return 0
         return 0
 
+    def addInstance(self):
+        self.possible_words["Property"] = self.possible_words["Property"] + (self.specs.question_words["instance"])
+
     def addNounSynonims(self):
 
         for key, wordList in self.possible_words.items():
