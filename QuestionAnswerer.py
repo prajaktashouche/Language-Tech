@@ -47,6 +47,7 @@ class QuestionAnswerer:
                     self.data = requests.get(self.url, params={'query': q, 'format': 'json'}).json()
                     ##print(self.data)
                     if self.data["results"]["bindings"] != []:          ##not just proper query, but check if we also got answers
+                        print(self.data["results"]["bindings"])
                         return True
                 except:                                                 ##no query constructed with the triple, so we try the next one
                     pass
@@ -57,7 +58,10 @@ class QuestionAnswerer:
         print(colored('Start with existing list', 'green'))
 
         if self.runNLPwithTripleList():
+            print("true")
             return True
+        self.triedAllExtensions = True
+
         ##Second try: expand the list with nounified versions and synonims
         print(colored('Expanding list with nounify', 'blue'))
 
@@ -100,22 +104,21 @@ class QuestionAnswerer:
         if not self.possibleTriplesRemaining() and not self.extendable():
             print(colored('No triples originally, Inducing properties from question words', 'green'))
             self.question.induceWordsFromQuestionWord()
-
         i=0
         #print(num)
         #self.question.constructQuery()
+
+        print(self.question.type)
         if self.question.type == "true_false":              ##checks if any of the results from the query is the same as some word in the question (like 'is it true, that the capital of the Netherlands is Amsterdam?' --> Netherlands, capital --> query gives Amsterdam --> chacks if in the question --> print yes
             print(self.question.question)
-            while self.possibleTriplesRemaining() and not self.triedAllExtensions :
+            while self.possibleTriplesRemaining() and not self.triedAllExtensions:
                 self.runNLP()
                 for answer in self.data["results"]["bindings"]:
                     for word in self.question.nlp.tokens:
-                        if word.text == answer[(self.question.targetVariable)[1:]]['value']:
+                        if (word.text == answer[(self.question.targetVariable)[1:]]['value']) or (word.lemma_ == "be" and answer[(self.question.targetVariable)[1:]]['value'] == "http://www.wikidata.org/prop/direct/P31"):          #bad hack
                             print("yes")
                             return
                 print("match not found, restarting the queries, number of possible triples remainig:")
-
-
             print("no")
             return
 
