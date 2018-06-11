@@ -60,7 +60,10 @@ spec1 = {
                   "bigger":"P2046",
                   "big":"P2046",
                   "size":"P2046",
-                  "is":"P31"
+                  "is":"P31",
+                  "administrative territory":"P150",
+                  "territory":"P150",
+                  "time period":"P2348"
     }
 }
 ###the specs are passed to the outer class as an argument, several versions can be defined here separately
