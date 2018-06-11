@@ -71,6 +71,6 @@ spec1 = {
 print('Exit by typing Bye')
 question = ''
 while question != 'Bye':
-    question = raw_input("Enter a question:")
+    question = input("Enter a question:")
     if question != 'Bye':                           ##no do while in python :(
         QuestionAnswerer(QuestionParser(question, Specification(spec1))).getAnswer()
