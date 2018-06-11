@@ -24,6 +24,7 @@ class QuestionParser:
         self.question = question  ##question string
         self.nlp = NLP(self.question, self.specs)
         self.possible_words = self.parse_spacy()  ##dictionary that stores possible words in a triple by type (Object, Property, Result)
+        self.possible_words_backup = self.possible_words       ##we store the list in a backup list: when we create triples, the ones where no ID can be found are popped from the original (for efficiency), but in case we want to find synonims, we reset the word list from the backup
         self.sort = None
         self.type = self.determineQuestionType()            ##true_false, count or list (single answer is just a list with 1 element)
         self.variable = ''                                  ##the variable names that will be in the SELECT command
@@ -175,7 +176,7 @@ class QuestionParser:
         self.possible_words["Property"] = self.possible_words["Property"] + (self.specs.question_words["instance"])
 
     def addNounSynonims(self):
-
+        self.possible_words = self.possible_words_backup
         for key, wordList in self.possible_words.items():
             for word in list(wordList):
                 print("word is ")
@@ -204,6 +205,7 @@ class QuestionParser:
 
     def tripleCombinations(self):      ##this returns a triple with one position being "", placeholder for the variable
         print("construction triples with input")
+        self.pruneWordList()
         print(self.possible_words)
 
         possible_triples = {"Result":[],            ##first one is result, as the queries are constructed in this order, and most questions target the result
@@ -212,25 +214,93 @@ class QuestionParser:
         a = self.possible_words["Object"]
         b = self.possible_words["Property"]
         if a and b:
-            for combination in self.generateCombinations(a,0,b ,0, []):
+            combinations = self.generateCombinations(a,0,b ,0, [])
+            for combination in combinations:
                 if combination[0] != combination[1]:        ##same word should not appear in 2 positions
-                    possible_triples["Result"].append([self.lemmatizer.lemmatize(combination[0]), self.lemmatizer.lemmatize(combination[1]), ""] )
+                    newTriple = self.getTripleFromWordsAndFormat([self.lemmatizer.lemmatize(combination[0]), self.lemmatizer.lemmatize(combination[1]), ""] ,self.specs.basic_question_formats["Result"])
+                    #if self.isValidTriple(newTriple, combinations):
+                    possible_triples["Result"].append(newTriple)
+
 
         a = self.possible_words["Object"]
         b = self.possible_words["Result"]
         if a and b:
-            for combination in self.generateCombinations(a, 0, b, 0, []):
+            combinations = self.generateCombinations(a, 0, b, 0, [])
+            for combination in combinations:
                 if combination[0] != combination[1]:  ##same word should not appear in 2 positions
-                    possible_triples["Property"].append([self.lemmatizer.lemmatize(combination[0]), "", self.lemmatizer.lemmatize(combination[1])])
+                    newTriple = self.getTripleFromWordsAndFormat([self.lemmatizer.lemmatize(combination[0]), "", self.lemmatizer.lemmatize(combination[1])], self.specs.basic_question_formats["Property"])
+                    #if self.isValidTriple(newTriple, combinations):
+                    possible_triples["Property"].append(newTriple)
 
         a = self.possible_words["Property"]
         b = self.possible_words["Result"]
         if a and b:
-            for combination in self.generateCombinations(a, 0, b, 0, []):
+            combinations = self.generateCombinations(a, 0, b, 0, [])
+            for combination in combinations:
                 if combination[0] != combination[1]:  ##same word should not appear in 2 positions
-                    possible_triples["Object"].append(["",self.lemmatizer.lemmatize(combination[0]), self.lemmatizer.lemmatize(combination[1])])
+                    newTriple = self.getTripleFromWordsAndFormat(["",self.lemmatizer.lemmatize(combination[0]), self.lemmatizer.lemmatize(combination[1])], self.specs.basic_question_formats["Object"])
+                    #if self.isValidTriple(newTriple, combinations):
+                    possible_triples["Object"].append(newTriple)
         return possible_triples
 
+    def pruneWordList(self):
+        for key, listCopy in self.possible_words.items():
+            for word in list(listCopy):
+                print("pruning, word is " + word + " type is " + str(key).lower())
+                ID = IDfinder(word, str(key).lower(), self.specs).findIdentifier()
+                if ID == '':
+                    print("!!!!!!!!.................................................popped " + word)
+                    self.possible_words[key].pop(self.possible_words[key].index(word))
+
+    def isValidTriple(self, triple, combinations):
+
+        #checks if an ID is found for the elements in the triple, if not, all triples are removed from the possible triple list with the word without ID
+        ##not in use anymore, left here in case we need it
+
+        # print("Object is " + triple.object.word + " is variable = " + str(triple.object.isVariable) + " found id is " + str(triple.object.SQL))
+        # print("Property is " + triple.property.word + " is variable = " + str(
+        #     triple.property.isVariable) + " found id is " + str(triple.property.SQL))
+        # print("Result is " + triple.result.word + " is variable = " + str(
+        #     triple.result.isVariable) + " found id is " + str(triple.result.SQL))
+        if not triple.object.isVariable and triple.object.SQL == 'wd:':
+            print("####################  invlid object triple ######################")
+            try:
+                self.possible_words["Object"].pop(self.possible_words["Object"].index(triple.object.word))      ##if the ID is not found for a word, we pop it from the list
+            except:
+                print("already removed from possible word list :" + triple.object.word )
+            self.removeFromCombinations(combinations, triple.object.word)
+
+            return False
+        if not triple.property.isVariable and triple.property.SQL == 'wdt:':
+            print("####################  invlid property triple ######################")
+            try:
+                self.possible_words["Property"].pop(self.possible_words["Property"].index(triple.property.word))      ##if the ID is not found for a word, we pop it from the list
+            except:
+                print("already removed from possible word list :" + triple.property.word )
+
+            self.removeFromCombinations(combinations, triple.property.word)
+
+            return False
+        if not triple.result.isVariable and triple.result.SQL == 'wd:':
+            print("####################  invlid result triple ######################")
+            try:
+                self.possible_words["Result"].pop(self.possible_words["Result"].index(triple.result.word))      ##if the ID is not found for a word, we pop it from the list
+            except:
+                print("already removed from possible word list :" + triple.result.word )
+
+            self.removeFromCombinations(combinations, triple.result.word)
+
+            return False
+        return True
+
+    def removeFromCombinations(self, combinations, word):
+        for comb in combinations:
+            if word in comb:
+                print("removing comb " + str(comb) + " because of word " + str(word))
+                try:
+                    combinations.pop(combinations.index(comb))
+                except:
+                    print("word " + word + " already removed")
 
     def queryBodyFromList(self, list):
         ret = ""

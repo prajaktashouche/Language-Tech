@@ -26,23 +26,23 @@ class QuestionAnswerer:
 
     def runNLPwithTripleList(self):
         for key, tripleList in self.question.possible_triples.items():
-            for tripleString in list(tripleList):         ##creating a copy, so i can pop from the original
-                tripleList.pop(tripleList.index(tripleString))
-                self.popped = tripleString
+            for triple in list(tripleList):         ##creating a copy, so i can pop from the original
+                tripleList.pop(tripleList.index(triple))
+                self.popped = triple
                 try:
                     print("triple is :")
-                    print(tripleString)
+                    print(triple.string)
                     #print(triple.object.word + "-" + triple.property.word + "-"+ triple.result.word)
                     #print("format is ")
                     #print(self.question.specs.basic_question_formats[key])
-                    tripleObject = self.question.getTripleFromWordsAndFormat(tripleString, self.question.specs.basic_question_formats[key])
+
                     if self.question.type == 'superlative':
                         print("reworking for superlative")
                         print("sort id is " + str(self.question.sort))
-                        tripleObject.constructSuperlativeSparql(self.question.sort)
-                        self.question.getVariableNames(tripleObject)
-                    print(tripleObject.SQL)
-                    q= self.question.constructQuery(self.question.queryStatementFromTriple(tripleObject))
+                        triple.constructSuperlativeSparql(self.question.sort)
+                        self.question.getVariableNames(triple)
+                    print(triple.SQL)
+                    q= self.question.constructQuery(self.question.queryStatementFromTriple(triple))
                     print(q)
                     self.data = requests.get(self.url, params={'query': q, 'format': 'json'}).json()
                     ##print(self.data)

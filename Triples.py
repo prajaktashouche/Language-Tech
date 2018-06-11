@@ -38,6 +38,7 @@ class Triple:
         self.targetVariable = ''                    ##the names of the variable to be printed (will be passed to the questionParser
         self.parse(triple, tripleType)              ##starts parsing on init
         self.SQL = self.object.stringToSQL() + '  ' + self.property.stringToSQL() + '   ' + self.result.stringToSQL()       ##stores the actual Sparql statement
+        self.string = self.object.word + " " + self.property.word + " " +  self.result.word
 
     def parse(self, triple, tripleType):
         for i in range(0,len(triple)):              ##had to do with indexing, in case there are identical elements in multiple slots
@@ -55,6 +56,10 @@ class Triple:
         elif name == 'Result':
             element = Result(word, isVariable, self)
         element.setTriple()
+
+
+
+
 
     def constructSuperlativeSparql(self, sort):
 

@@ -31,12 +31,12 @@ spec1 = {
                 ##regex stopword removal (kept for potential use later): (?:the|a|an)?\s*
                 },
     },
-    'deps':{"Object": ["pobj", "poss", "nsubj", "conj", "dobj", "npadvmod", "appos","attr"],                 ##we store here the possible deps (returned by spacy) for each element in a triple
+    'deps':{"Object": ["pobj", "poss", "nsubj", "conj", "dobj", "npadvmod", "appos", "attr"],                 ##we store here the possible deps (returned by spacy) for each element in a triple
             "Property" : ["attr", "nsubj", "acomp", "dobj","pcomp"],
             "Result": ["attr", "acomp", "advcl"]
             },
     'extended_deps':{"Object": ["dobj","compound"],                 ##The deps that should be considered when looking at the synonims and nounified words
-                        "Property" : ["ROOT","acl","compound"],
+                        "Property" : ["ROOT","acl", "compound"],
                         "Result": ["pobj"]
                     },
     'true_false_list':{"starters":['is', 'has', 'does', 'was', 'do'],
