@@ -6,7 +6,7 @@ class NLP:
         self.specs = specs
         self.text = text
         self.nlp = spacy.load('en')
-        self.tokens = self.nlp(text)
+        self.tokens = self.nlp(text.decode('utf-8'))
         #self.printDep()
 
     def lemmas(self):
