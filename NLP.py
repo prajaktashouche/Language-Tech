@@ -28,7 +28,7 @@ class NLP:
                 else:
                     instance.append(self.tokens[w].lemma_) #text to lemma
                 i = w-1
-                while self.tokens[i].dep_ == "compound" or (self.tokens[i].dep_ == "amod" and self.tokens[i].tag_ == 'JJS'): #added amod
+                while self.tokens[i].dep_ == "compound" or (self.tokens[i].dep_ == "amod" and (self.tokens[i].tag_ == 'JJS' or self.tokens[i].tag_ == 'NN')): #added amod
                     if self.tokens[i].dep_ == 'amod':
                         instance.append(self.tokens[i].text)  # add text, since lemma of amod is not a property
                     else:
