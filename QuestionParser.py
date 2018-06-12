@@ -168,6 +168,7 @@ class QuestionParser:
                     for word in a:
                         print("trying the word" + word)
                         self.possible_words[key] += nounify(word)
+        self.getElements()
         self.possible_triples = self.tripleCombinations()
                     # print ("the " + key + "s of this sentence are ")
                     # print(possible_words[key])
@@ -192,6 +193,8 @@ class QuestionParser:
                     self.possible_words[key] += nounify(word)
             print("key is " + str(key) + " extended list is ")
             print(wordList)
+
+        self.getElements()
 
         self.possible_triples = self.tripleCombinations()
         return
@@ -239,6 +242,80 @@ class QuestionParser:
                     possible_triples["Object"].append(["",self.lemmatizer.lemmatize(combination[0]), self.lemmatizer.lemmatize(combination[1])])
         return possible_triples
 
+
+    def getElements(self):
+        elements = {"Object":[],
+                    "Property":[],
+                    "Result":[]}
+        wrapperTriple = Triple([],[],self.specs)
+        for key, listCopy in self.possible_words.items():
+            for word in list(listCopy):
+                if word[0].islower():
+                    word = self.lemmatizer.lemmatize(word)
+                print("getting elements, word is " + word + " type is " + str(key).lower())
+                if str(key) == 'Object':
+                    newElement = Object(word, False, wrapperTriple)
+                elif str(key) == 'Property':
+                    newElement = Property(word, False, wrapperTriple)
+                else:
+                    newElement = Result(word, False, wrapperTriple)
+                #ID = IDfinder(word, str(key).lower(), self.specs).findIdentifier()
+                if newElement.SQL.split(":")[1] == '':
+                    print("!!!!!!!!.................................................popped " + word)
+                    self.possible_words[key].pop(self.possible_words[key].index(word))
+                else:
+                    elements[key] += [newElement]
+        return elements
+
+    def isValidTriple(self, triple, combinations):
+
+        #checks if an ID is found for the elements in the triple, if not, all triples are removed from the possible triple list with the word without ID
+        ##not in use anymore, left here in case we need it
+
+        # print("Object is " + triple.object.word + " is variable = " + str(triple.object.isVariable) + " found id is " + str(triple.object.SQL))
+        # print("Property is " + triple.property.word + " is variable = " + str(
+        #     triple.property.isVariable) + " found id is " + str(triple.property.SQL))
+        # print("Result is " + triple.result.word + " is variable = " + str(
+        #     triple.result.isVariable) + " found id is " + str(triple.result.SQL))
+        if not triple.object.isVariable and triple.object.SQL == 'wd:':
+            print("####################  invlid object triple ######################")
+            try:
+                self.possible_words["Object"].pop(self.possible_words["Object"].index(triple.object.word))      ##if the ID is not found for a word, we pop it from the list
+            except:
+                print("already removed from possible word list :" + triple.object.word )
+            self.removeFromCombinations(combinations, triple.object.word)
+
+            return False
+        if not triple.property.isVariable and triple.property.SQL == 'wdt:':
+            print("####################  invlid property triple ######################")
+            try:
+                self.possible_words["Property"].pop(self.possible_words["Property"].index(triple.property.word))      ##if the ID is not found for a word, we pop it from the list
+            except:
+                print("already removed from possible word list :" + triple.property.word )
+
+            self.removeFromCombinations(combinations, triple.property.word)
+
+            return False
+        if not triple.result.isVariable and triple.result.SQL == 'wd:':
+            print("####################  invlid result triple ######################")
+            try:
+                self.possible_words["Result"].pop(self.possible_words["Result"].index(triple.result.word))      ##if the ID is not found for a word, we pop it from the list
+            except:
+                print("already removed from possible word list :" + triple.result.word )
+
+            self.removeFromCombinations(combinations, triple.result.word)
+
+            return False
+        return True
+
+    def removeFromCombinations(self, combinations, word):
+        for comb in combinations:
+            if word in comb:
+                print("removing comb " + str(comb) + " because of word " + str(word))
+                try:
+                    combinations.pop(combinations.index(comb))
+                except:
+                    print("word " + word + " already removed")
 
     def queryBodyFromList(self, list):
         ret = ""

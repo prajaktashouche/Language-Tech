@@ -51,9 +51,11 @@ def nounify(word):
     # Build the result in the form of a list containing tuples (word, probability)
     result = result + [(w, float(words.count(w))/len_words) for w in set(words)]
     result.sort(key=lambda w: -w[1])
-    result = [res[0] for res in result]
+    result = [word] + [res[0] for res in result]
     print("results are")
     print(result)
 
     # return all the possibilities sorted by probability
     return result
+
+

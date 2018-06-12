@@ -49,6 +49,7 @@ spec1 = {
     'common_IDs':{"highest": "P2044",
                   "high":"P2044",
                   "higher":"P2044",
+                  "height":"P2044",
                   "longest": "P2043",
                   "long":"P2043",
                   "longer":"P2043",
@@ -60,14 +61,27 @@ spec1 = {
                   "bigger":"P2046",
                   "big":"P2046",
                   "size":"P2046",
+
                   "depth":"P1589",
                   "deep":"P1589",
 
                   "eu":"Q458",
                   "us":"Q30",
                   "uk":"Q145",
-		  "un":"Q1065"
+                  "un":"Q1065"
                   "world":"Q2"
+
+                  "is":"P31",
+                  "administrative territory":"P150",
+                  "territory":"P150",
+                  "time period":"P2348",
+                  "border":"P17",
+                  "lowest":"P1589",
+                  "low":"P1589",
+                  "many people":"P1082",
+                  "many inhabitants":"P1082",
+                  "territorial entity":"P150"
+
     }
 }
 ###the specs are passed to the outer class as an argument, several versions can be defined here separately
