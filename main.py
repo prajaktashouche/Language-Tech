@@ -63,7 +63,13 @@ spec1 = {
                   "is":"P31",
                   "administrative territory":"P150",
                   "territory":"P150",
-                  "time period":"P2348"
+                  "time period":"P2348",
+                  "border":"P17",
+                  "lowest":"P1589",
+                  "low":"P1589",
+                  "many people":"P1082",
+                  "many inhabitants":"P1082"
+
     }
 }
 ###the specs are passed to the outer class as an argument, several versions can be defined here separately
