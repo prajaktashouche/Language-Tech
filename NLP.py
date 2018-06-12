@@ -23,7 +23,11 @@ class NLP:
             print(w)
             if self.tokens[w].dep_ == dep and not self.tokens[w].text in list(self.specs.question_words.keys()) and not self.tokens[w].text.lower() in self.specs.ignored_words and str(self.tokens[w].tag_) in self.specs.tags_of_interest:
                 instance = []
-                instance.append(self.tokens[w].lemma_) #text to lemma
+                if (self.tokens[w].pos_ == "PROPN"):
+                    instance.append(self.tokens[w].text)  # keep capitals for entities
+                else:
+                    instance.append(self.tokens[w].lemma_)
+               # instance.append(self.tokens[w].lemma_) #text to lemma
                 i = w-1
                 while self.tokens[i].dep_ == "compound" or (self.tokens[i].dep_ == "amod" and (self.tokens[i].tag_ == 'JJ' or self.tokens[i].tag_ == 'JJS' or self.tokens[i].tag_ == 'JJR' or self.tokens[i].tag_ == 'NN') and not (self.tokens[i].text == 'many' or self.tokens[i].text == 'much')): #added amod
                     if self.tokens[i].dep_ == 'amod':

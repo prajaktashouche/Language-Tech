@@ -14,7 +14,7 @@ import sys
 
 ##############################################  define specification for the task here ###################################
 spec1 = {
-    'ignored_words':["is", "true", "false", "yes", "no", "list"],
+    'ignored_words':["is", "true", "false", "yes", "no", "list", "have"],
     'question_words':{'What': ["instance of", "subclass of"],
                       'Who':["instance of"],
                       'Where': ['continent'],
@@ -60,10 +60,13 @@ spec1 = {
                   "bigger":"P2046",
                   "big":"P2046",
                   "size":"P2046",
+                  "depth":"P1589",
+                  "deep":"P1589",
 
                   "eu":"Q458",
                   "us":"Q30",
-                  "uk":"Q145"
+                  "uk":"Q145",
+                  "world":"Q2"
     }
 }
 ###the specs are passed to the outer class as an argument, several versions can be defined here separately
