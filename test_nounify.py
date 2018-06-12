@@ -20,15 +20,11 @@ def nounify(word):
     print('nounifying word ' + str(word))
     word_synsets = wn.synsets(word)
 
-
     # Word not found
     if not word_synsets:
         return []
-    print("synsets are ")
-    print(word_synsets)
-   # for i in word_synsets:
-    #    print(i, i.hypernyms())
-     #   print(i, i.hyponyms())
+    #print("synsets are ")
+    #print(word_synsets)
     # Get all lemmas of the word
     word_lemmas = []
     for s in word_synsets:

@@ -26,28 +26,27 @@ class QuestionAnswerer:
 
     def runNLPwithTripleList(self):
         for key, tripleList in self.question.possible_triples.items():
-            for triple in list(tripleList):         ##creating a copy, so i can pop from the original
-                tripleList.pop(tripleList.index(triple))
-                self.popped = triple
+            for tripleString in list(tripleList):         ##creating a copy, so i can pop from the original
+                tripleList.pop(tripleList.index(tripleString))
+                self.popped = tripleString
                 try:
                     print("triple is :")
-                    print(triple.string)
+                    print(tripleString)
                     #print(triple.object.word + "-" + triple.property.word + "-"+ triple.result.word)
                     #print("format is ")
                     #print(self.question.specs.basic_question_formats[key])
-
+                    tripleObject = self.question.getTripleFromWordsAndFormat(tripleString, self.question.specs.basic_question_formats[key])
                     if self.question.type == 'superlative':
                         print("reworking for superlative")
                         print("sort id is " + str(self.question.sort))
-                        triple.constructSuperlativeSparql(self.question.sort)
-                    self.question.getVariableNames(triple)
-                    print(triple.SQL)
-                    q= self.question.constructQuery(self.question.queryStatementFromTriple(triple))
+                        tripleObject.constructSuperlativeSparql(self.question.sort)
+                        self.question.getVariableNames(tripleObject)
+                    print(tripleObject.SQL)
+                    q= self.question.constructQuery(self.question.queryStatementFromTriple(tripleObject))
                     print(q)
                     self.data = requests.get(self.url, params={'query': q, 'format': 'json'}).json()
                     ##print(self.data)
                     if self.data["results"]["bindings"] != []:          ##not just proper query, but check if we also got answers
-                        print(self.data["results"]["bindings"])
                         return True
                 except:                                                 ##no query constructed with the triple, so we try the next one
                     pass
@@ -58,10 +57,7 @@ class QuestionAnswerer:
         print(colored('Start with existing list', 'green'))
 
         if self.runNLPwithTripleList():
-            print("true")
             return True
-        self.triedAllExtensions = True
-
         ##Second try: expand the list with nounified versions and synonims
         print(colored('Expanding list with nounify', 'blue'))
 
@@ -93,6 +89,21 @@ class QuestionAnswerer:
                     return True
         return False
 
+    def partOf(self, word, answer):
+        answernlp= nlp(answer[(self.question.targetVariable)[1:]]['value'])
+        print(answernlp)
+        for w in answernlp:
+            print(w.dep_)
+            if(w.dep_ == "pobj"):
+                rootAnswer = w.text
+            else:
+                rootAnswer = "0"
+        if rootAnswer == word.text:
+            return True
+        else:
+            return False
+
+
     def getAnswer(self):
         print("question is ")
         print(self.question.question)
@@ -104,21 +115,22 @@ class QuestionAnswerer:
         if not self.possibleTriplesRemaining() and not self.extendable():
             print(colored('No triples originally, Inducing properties from question words', 'green'))
             self.question.induceWordsFromQuestionWord()
+
         i=0
         #print(num)
         #self.question.constructQuery()
-
-        print(self.question.type)
         if self.question.type == "true_false":              ##checks if any of the results from the query is the same as some word in the question (like 'is it true, that the capital of the Netherlands is Amsterdam?' --> Netherlands, capital --> query gives Amsterdam --> chacks if in the question --> print yes
             print(self.question.question)
-            while self.possibleTriplesRemaining() and not self.triedAllExtensions:
+            while self.possibleTriplesRemaining() and not self.triedAllExtensions :
                 self.runNLP()
                 for answer in self.data["results"]["bindings"]:
                     for word in self.question.nlp.tokens:
-                        if (word.text == answer[(self.question.targetVariable)[1:]]['value']) or (word.lemma_ == "be" and answer[(self.question.targetVariable)[1:]]['value'] == "http://www.wikidata.org/prop/direct/P31"):          #bad hack
+                        if word.text == answer[(self.question.targetVariable)[1:]]['value'] or self.partOf(word, answer):
                             print("yes")
                             return
                 print("match not found, restarting the queries, number of possible triples remainig:")
+
+
             print("no")
             return
 
