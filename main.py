@@ -14,11 +14,10 @@ import sys
 
 ##############################################  define specification for the task here ###################################
 spec1 = {
-    'ignored_words':["is", "true", "false", "yes", "no", "list", "have"],
+    'ignored_words':["is", "true", "false", "yes", "no", "list"],
     'question_words':{'What': ["instance of", "subclass of"],
                       'Who':["instance of"],
                       'Where': ['continent'],
-                      'is':["instance of", "part of"],
 		      'When': ['point in time','start time','end time']
                       },
     'basic_question_formats':{"Object":[{'variable':'Object'},'Property', 'Result'],
@@ -32,19 +31,19 @@ spec1 = {
                 ##regex stopword removal (kept for potential use later): (?:the|a|an)?\s*
                 },
     },
-    'deps':{"Object": ["pobj", "poss", "nsubj", "conj", "dobj", "npadvmod", "appos", "nsubjpass","attr"],                 ##we store here the possible deps (returned by spacy) for each element in a triple
-            "Property" : ["attr", "nsubj", "acomp", "dobj","pcomp", "ROOT"],
+    'deps':{"Object": ["pobj", "poss", "nsubj", "conj", "dobj", "npadvmod", "appos", "attr"],                 ##we store here the possible deps (returned by spacy) for each element in a triple
+            "Property" : ["attr", "nsubj", "acomp", "dobj","pcomp"],
             "Result": ["attr", "acomp", "advcl"]
             },
     'extended_deps':{"Object": ["dobj","compound"],                 ##The deps that should be considered when looking at the synonims and nounified words
-                        "Property" : ["ROOT","acl","compound"],
+                        "Property" : ["ROOT","acl", "compound"],
                         "Result": ["pobj"]
                     },
     'true_false_list':{"starters":['is', 'has', 'does', 'was', 'do'],
                        "somewhereInText": ['true', 'false', 'yes', 'no']},
-    'count_list':{"singles":["count","number"],          #single words
+    'count_list':{"singles":["count"],          #single words
                 "doubles":["how many", "how much"]},         #two word expressions
-    'tags_of_interest': ["JJ", "JJR", "JJS", "NN", "NNS", "NNP", "NNPS", "RB", "RBS", "RBR", "VB", "VBD", "VBG", "VBP", "VBZ", "VBN"],
+    'tags_of_interest': ["JJ", "JJR", "JJS", "NN", "NNS", "NNP", "NNPS", "RB", "RBS", "RBR", "VB", "VBD", "VBG", "VBP", "VBZ"],
     'print':True,
     'common_IDs':{"highest": "P2044",
                   "high":"P2044",
@@ -55,22 +54,13 @@ spec1 = {
                   "longer":"P2043",
                   "length":"P2043",
                   "member":"P150",
+                  "part":"P361",                #part -> part of
                   "county":"P150",
                   "state":"P150",
                   "language":"P37",            #language -> official language
                   "bigger":"P2046",
                   "big":"P2046",
                   "size":"P2046",
-
-                  "depth":"P1589",
-                  "deep":"P1589",
-
-                  "eu":"Q458",
-                  "us":"Q30",
-                  "uk":"Q145",
-                  "un":"Q1065"
-                  "world":"Q2"
-
                   "is":"P31",
                   "administrative territory":"P150",
                   "territory":"P150",

@@ -27,6 +27,7 @@ class IDfinder:
         try:
             json = requests.get(self.url,self.params).json()
         #print (json)
+            print("---------------------------ID for word " + self.word + " is " + str(json['search'][0]['id']))
             return json['search'][0]['id']
         except:
             print("ID not found for '" + self.word + "'")
