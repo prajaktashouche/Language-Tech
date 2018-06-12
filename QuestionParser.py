@@ -25,6 +25,7 @@ class QuestionParser:
         self.nlp = NLP(self.question, self.specs)
         self.possible_words = self.parse_spacy()  ##dictionary that stores possible words in a triple by type (Object, Property, Result)
         self.possible_words_backup = self.possible_words       ##we store the list in a backup list: when we create triples, the ones where no ID can be found are popped from the original (for efficiency), but in case we want to find synonims, we reset the word list from the backup
+        self.elements = self.getElements()
         self.sort = None
         self.type = self.determineQuestionType()            ##true_false, count or list (single answer is just a list with 1 element)
         self.variable = ''                                  ##the variable names that will be in the SELECT command
@@ -205,52 +206,65 @@ class QuestionParser:
 
     def tripleCombinations(self):      ##this returns a triple with one position being "", placeholder for the variable
         print("construction triples with input")
-        self.pruneWordList()
-        print(self.possible_words)
 
+        print(self.possible_words)
+        print("elements are")
+        print(str(self.elements))
+        wrapperTriple = Triple([], [], self.specs)
         possible_triples = {"Result":[],            ##first one is result, as the queries are constructed in this order, and most questions target the result
                             "Object":[],
                             "Property":[]}
-        a = self.possible_words["Object"]
-        b = self.possible_words["Property"]
+        a = self.elements["Object"]
+        b = self.elements["Property"]
         if a and b:
             combinations = self.generateCombinations(a,0,b ,0, [])
             for combination in combinations:
-                if combination[0] != combination[1]:        ##same word should not appear in 2 positions
-                    newTriple = self.getTripleFromWordsAndFormat([self.lemmatizer.lemmatize(combination[0]), self.lemmatizer.lemmatize(combination[1]), ""] ,self.specs.basic_question_formats["Result"])
-                    #if self.isValidTriple(newTriple, combinations):
+                if combination[0].word != combination[1].word:        ##same word should not appear in 2 positions
+                    newTriple = Triple([combination[0],  combination[1], Element('', True, wrapperTriple)], [], self.specs)
                     possible_triples["Result"].append(newTriple)
 
 
-        a = self.possible_words["Object"]
-        b = self.possible_words["Result"]
+        a = self.elements["Object"]
+        b = self.elements["Result"]
         if a and b:
             combinations = self.generateCombinations(a, 0, b, 0, [])
             for combination in combinations:
-                if combination[0] != combination[1]:  ##same word should not appear in 2 positions
-                    newTriple = self.getTripleFromWordsAndFormat([self.lemmatizer.lemmatize(combination[0]), "", self.lemmatizer.lemmatize(combination[1])], self.specs.basic_question_formats["Property"])
-                    #if self.isValidTriple(newTriple, combinations):
+                if combination[0].word != combination[1].word:  ##same word should not appear in 2 positions
+                    newTriple = Triple([combination[0], Element('', True, wrapperTriple) ,combination[1]], [], self.specs)
                     possible_triples["Property"].append(newTriple)
 
-        a = self.possible_words["Property"]
-        b = self.possible_words["Result"]
+        a = self.elements["Property"]
+        b = self.elements["Result"]
         if a and b:
             combinations = self.generateCombinations(a, 0, b, 0, [])
             for combination in combinations:
-                if combination[0] != combination[1]:  ##same word should not appear in 2 positions
-                    newTriple = self.getTripleFromWordsAndFormat(["",self.lemmatizer.lemmatize(combination[0]), self.lemmatizer.lemmatize(combination[1])], self.specs.basic_question_formats["Object"])
-                    #if self.isValidTriple(newTriple, combinations):
+                if combination[0].word != combination[1].word:  ##same word should not appear in 2 positions
+                    newTriple = Triple([Element('', True, wrapperTriple),combination[0], combination[1] ], [],self.specs)
                     possible_triples["Object"].append(newTriple)
         return possible_triples
 
-    def pruneWordList(self):
+    def getElements(self):
+        elements = {"Object":[],
+                    "Property":[],
+                    "Result":[]}
+        wrapperTriple = Triple([],[],self.specs)
         for key, listCopy in self.possible_words.items():
             for word in list(listCopy):
-                print("pruning, word is " + word + " type is " + str(key).lower())
-                ID = IDfinder(word, str(key).lower(), self.specs).findIdentifier()
-                if ID == '':
+                word = self.lemmatizer.lemmatize(word)
+                print("getting elements, word is " + word + " type is " + str(key).lower())
+                if str(key) == 'Object':
+                    newElement = Object(word, False, wrapperTriple)
+                elif str(key) == 'Property':
+                    newElement = Property(word, False, wrapperTriple)
+                else:
+                    newElement = Result(word, False, wrapperTriple)
+                #ID = IDfinder(word, str(key).lower(), self.specs).findIdentifier()
+                if newElement.SQL.split(":")[1] == '':
                     print("!!!!!!!!.................................................popped " + word)
                     self.possible_words[key].pop(self.possible_words[key].index(word))
+                else:
+                    elements[key] += [newElement]
+        return elements
 
     def isValidTriple(self, triple, combinations):
 

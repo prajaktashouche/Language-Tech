@@ -40,7 +40,7 @@ class QuestionAnswerer:
                         print("reworking for superlative")
                         print("sort id is " + str(self.question.sort))
                         triple.constructSuperlativeSparql(self.question.sort)
-                        self.question.getVariableNames(triple)
+                    self.question.getVariableNames(triple)
                     print(triple.SQL)
                     q= self.question.constructQuery(self.question.queryStatementFromTriple(triple))
                     print(q)
