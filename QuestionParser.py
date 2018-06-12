@@ -159,6 +159,7 @@ class QuestionParser:
                     for word in a:
                         print("trying the word" + word)
                         self.possible_words[key] += nounify(word)
+        self.getElements()
         self.possible_triples = self.tripleCombinations()
                     # print ("the " + key + "s of this sentence are ")
                     # print(possible_words[key])
@@ -186,6 +187,8 @@ class QuestionParser:
                     self.possible_words[key] += nounify(word)
             print("key is " + str(key) + " extended list is ")
             print(wordList)
+
+        self.getElements()
 
         self.possible_triples = self.tripleCombinations()
         return
@@ -250,7 +253,8 @@ class QuestionParser:
         wrapperTriple = Triple([],[],self.specs)
         for key, listCopy in self.possible_words.items():
             for word in list(listCopy):
-                word = self.lemmatizer.lemmatize(word)
+                if word[0].islower():
+                    word = self.lemmatizer.lemmatize(word)
                 print("getting elements, word is " + word + " type is " + str(key).lower())
                 if str(key) == 'Object':
                     newElement = Object(word, False, wrapperTriple)

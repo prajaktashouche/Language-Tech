@@ -48,6 +48,7 @@ spec1 = {
     'common_IDs':{"highest": "P2044",
                   "high":"P2044",
                   "higher":"P2044",
+                  "height":"P2044",
                   "longest": "P2043",
                   "long":"P2043",
                   "longer":"P2043",
@@ -68,7 +69,8 @@ spec1 = {
                   "lowest":"P1589",
                   "low":"P1589",
                   "many people":"P1082",
-                  "many inhabitants":"P1082"
+                  "many inhabitants":"P1082",
+                  "territorial entity":"P150"
 
     }
 }
