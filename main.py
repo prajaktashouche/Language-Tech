@@ -32,17 +32,17 @@ spec1 = {
                 ##regex stopword removal (kept for potential use later): (?:the|a|an)?\s*
                 },
     },
-    'deps':{"Object": ["pobj", "poss", "nsubj", "conj", "dobj", "npadvmod", "appos", "nsubjpass"],                 ##we store here the possible deps (returned by spacy) for each element in a triple
+    'deps':{"Object": ["pobj", "poss", "nsubj", "conj", "dobj", "npadvmod", "appos", "nsubjpass","attr"],                 ##we store here the possible deps (returned by spacy) for each element in a triple
             "Property" : ["attr", "nsubj", "acomp", "dobj","pcomp", "ROOT"],
             "Result": ["attr", "acomp", "advcl"]
             },
     'extended_deps':{"Object": ["dobj","compound"],                 ##The deps that should be considered when looking at the synonims and nounified words
-                        "Property" : ["ROOT","acl"],
+                        "Property" : ["ROOT","acl","compound"],
                         "Result": ["pobj"]
                     },
     'true_false_list':{"starters":['is', 'has', 'does', 'was', 'do'],
                        "somewhereInText": ['true', 'false', 'yes', 'no']},
-    'count_list':{"singles":["count"],          #single words
+    'count_list':{"singles":["count","number"],          #single words
                 "doubles":["how many", "how much"]},         #two word expressions
     'tags_of_interest': ["JJ", "JJR", "JJS", "NN", "NNS", "NNP", "NNPS", "RB", "RBS", "RBR", "VB", "VBD", "VBG", "VBP", "VBZ", "VBN"],
     'print':True,
@@ -66,6 +66,7 @@ spec1 = {
                   "eu":"Q458",
                   "us":"Q30",
                   "uk":"Q145",
+		  "un":"Q1065"
                   "world":"Q2"
     }
 }
